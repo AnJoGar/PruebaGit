@@ -1,0 +1,521 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn import linear_model
+from sklearn import model_selection
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import f1_score
+from sklearn.metrics import r2_score
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+url =  'https://raw.githubusercontent.com/Darwin2016/dataset2022/main/dataSETS/affairs.csv'
+df = pd.read_csv(url, delimiter=',')
+df.head()
+
+df.shape
+
+df['affair'].value_counts()
+
+X = df.drop("affair", axis=1)
+y = df.affair
+X.head()
+
+from sklearn.feature_selection import SelectKBest
+
+best=SelectKBest(k=4)
+X_new = best.fit_transform(X, y)
+X_new.shape
+selected = best.get_support(indices=True)
+print(X.columns[selected])
+X_new
+
+import matplotlib.pyplot as plt
+from matplotlib import colors
+import seaborn as sb
+
+used_features =X.columns[selected]
+
+colormap = plt.cm.viridis
+plt.figure(figsize=(8,8))
+plt.title('Pearson Correlation of Features', y=1.05, size=15)
+sb.heatmap(df[used_features].astype(float).corr(),linewidths=0.1,vmax=1.0, square=True, cmap=colormap, linecolor='white', annot=True)
+
+X=df[used_features]
+
+X.head()
+
+from sklearn.preprocessing import StandardScaler
+#Seperar el dataframe en datos de train y datos de test
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)#,stratify=y)
+
+# Escalar los datos de entrada
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+X_test.shape,X_train.shape
+
+modelo = linear_model.LogisticRegression(C=0.03,solver='liblinear',max_iter=100, random_state=None)
+
+#Entrenamiento del Modelo
+modelo.fit(X_train_scaled,y_train)
+
+from sklearn import model_selection
+seed = 7
+name='Logistic Regression'
+kfold = model_selection.KFold(n_splits=10, random_state=seed,shuffle=True)
+cv_results = model_selection.cross_val_score(modelo, X_train, y_train, cv=kfold, scoring='accuracy')
+msg = "%s: %f (%f)" % (name, cv_results.mean(), cv_results.std())
+print(msg)
+
+# Predecimos sobre nuestro set de traint
+prediccion = modelo.predict(X_test_scaled)
+print(prediccion)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn import linear_model
+from sklearn import model_selection
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import f1_score
+from sklearn.metrics import r2_score
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+from matplotlib import colors
+import seaborn as sb
+from sklearn.feature_selection import SelectKBest
+from sklearn.preprocessing import StandardScaler
+
+# Load dataset
+url = 'https://raw.githubusercontent.com/Darwin2016/dataset2022/main/dataSETS/affairs.csv'
+df = pd.read_csv(url, delimiter=',')
+print(df.head())
+
+# Print shape of the dataset
+print(df.shape)
+
+# Value counts for 'affair'
+print(df['affair'].value_counts())
+
+# Features and target variable
+X = df.drop("affair", axis=1)
+y = df.affair
+print(X.head())
+
+# Feature selection
+best = SelectKBest(k=4)
+X_new = best.fit_transform(X, y)
+print(X_new.shape)
+selected = best.get_support(indices=True)
+print(X.columns[selected])
+print(X_new)
+
+# Visualization of selected features correlation
+used_features = X.columns[selected]
+colormap = plt.cm.viridis
+plt.figure(figsize=(8,8))
+plt.title('Pearson Correlation of Features', y=1.05, size=15)
+sb.heatmap(df[used_features].astype(float).corr(), linewidths=0.1, vmax=1.0, square=True, cmap=colormap, linecolor='white', annot=True)
+plt.show()
+
+# Use the selected features
+X = df[used_features]
+print(X.head())
+
+# Split the dataframe into training and testing data with stratification
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+# Scale the input data
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Print the shape of test and train data
+print(X_test.shape, X_train.shape)
+
+# Initialize and train the Logistic Regression model
+modelo = linear_model.LogisticRegression(C=0.03, solver='liblinear', max_iter=100, random_state=None)
+modelo.fit(X_train_scaled, y_train)
+
+# Cross-validation
+seed = 7
+name = 'Logistic Regression'
+kfold = model_selection.KFold(n_splits=10, random_state=seed, shuffle=True)
+cv_results = model_selection.cross_val_score(modelo, X_train, y_train, cv=kfold, scoring='accuracy')
+msg = "%s: %f (%f)" % (name, cv_results.mean(), cv_results.std())
+print(msg)
+
+# Prediction on the test set
+prediccion = modelo.predict(X_test_scaled)
+print(prediccion)
+
+
+
+
+
+
+
+
+print("Accuracy: ",accuracy_score(y_test,prediccion))
+print("Recall: ",recall_score(y_test,prediccion))
+print("Precision: ",precision_score(y_test,prediccion))
+print("F1: ",f1_score(y_test,prediccion))
+print("R2: ",r2_score(y_test,prediccion))
+
+#generamos la matriz de confusión
+
+cnf_matrix=confusion_matrix(y_test, prediccion)
+cnf_matrix
+
+print(classification_report(y_test, prediccion))
+# import required modules
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+class_names=[0,1] # name  of classes
+fig, ax = plt.subplots()
+tick_marks = np.arange(len(class_names))
+plt.xticks(tick_marks, class_names)
+plt.yticks(tick_marks, class_names)
+# create heatmap
+sns.heatmap(pd.DataFrame(cnf_matrix), annot=True, cmap="YlGnBu" ,fmt='g')
+ax.xaxis.set_label_position("top")
+plt.tight_layout()
+plt.title('Confusion Matrix', y=1.1)
+plt.ylabel('Actual Label')
+plt.xlabel('Predicted Label')
+
+
+
+
+
+
+
+///////////
+Usando Arboles de Decisión
+from sklearn.tree import DecisionTreeClassifier
+modelotree = DecisionTreeClassifier(max_depth = 3)
+modelotree.fit(X_train_scaled,y_train)
+# Predecimos sobre nuestro set de traint
+pred_test = modelotree.predict(X_test_scaled)
+print('Accuracy sobre conjunto de Test:', accuracy_score(pred_test,y_test))
+import matplotlib.pyplot as plt
+from sklearn.tree import plot_tree
+# Estructura del árbol creado
+# ------------------------------------------------------------------------------
+fig, ax = plt.subplots(figsize=(15, 5))
+
+print(f"Profundidad del árbol: {modelotree.get_depth()}")
+print(f"Número de nodos terminales: {modelotree.get_n_leaves()}")
+
+plot = plot_tree(
+            decision_tree = modelotree,
+            feature_names = df.drop(columns = "affair").columns,
+            class_names   = 'affair',
+            filled        = True,
+            impurity      = False,
+            fontsize      = 8,
+            precision     = 2,
+            ax            = ax
+       )
+cnf_matrix=confusion_matrix(y_test, pred_test)
+cnf_matrix
+print("Recall: ",recall_score(y_test,pred_test))
+print("Precision: ",precision_score(y_test,pred_test))
+print("F1: ",f1_score(y_test,pred_test))
+print("R2: ",r2_score(y_test,pred_test))
+
+
+/////
+
+#RandomForest
+from sklearn.ensemble import RandomForestClassifier
+
+modelRF = RandomForestClassifier(max_depth=3,criterion='entropy',min_samples_split=5, min_samples_leaf=2,n_estimators=20)
+
+modelRF.fit(X_train_scaled,y_train)
+
+y_pred = modelRF.predict(X_test_scaled)
+
+randomForest_score = accuracy_score(y_test, y_pred)
+
+print("Random Forest Score :{}".format(randomForest_score))
+
+#generamos la matriz de confusión
+
+cnf_matrix=confusion_matrix(y_test, y_pred)
+cnf_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix,classification_report
+
+sns.set()
+
+cm = confusion_matrix(y_test, y_pred, labels=[0,1])
+f, (ax1) = plt.subplots(figsize=(3,3),nrows=1)
+
+# crear mapa de calor dibujar mapa de calor: cmap="Reds"
+sns.heatmap(pd.DataFrame(cm),linewidths = 0.05, annot=True, cmap="Blues",fmt='g')
+ax1.set_title('Matriz de Confusión') #título
+ax1.set_xlabel('Predicción') #eje x
+ax1.set_ylabel('Real') #eje y
+f.savefig('RF-1.jpg')
+
+print(classification_report(y_test, y_pred))
+
+print("Accuracy: ",accuracy_score(y_test,y_pred))
+print("Recall: ",recall_score(y_test,y_pred))
+print("Precision: ",precision_score(y_test,y_pred))
+print("F1: ",f1_score(y_test,y_pred))
+print("R2: ",r2_score(y_test,y_pred))
+
+
+//////SVM////
+
+#SVM
+from sklearn import svm
+
+modelSVM = svm.SVC(kernel='rbf')
+
+modelSVM.fit(X_train_scaled, y_train)
+
+y_pred = modelSVM.predict(X_test_scaled)
+
+svm_score=accuracy_score(y_test, y_pred)
+
+print("SVM's Accuracy:{0}".format(accuracy_score(y_test, y_pred)))
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix,classification_report
+
+sns.set()
+
+cm = confusion_matrix(y_test, y_pred, labels=[0,1])
+f, (ax1) = plt.subplots(figsize=(3,3),nrows=1)
+
+# crear mapa de calor dibujar mapa de calor: cmap="Reds"
+sns.heatmap(pd.DataFrame(cm),linewidths = 0.05, annot=True, cmap="Blues",fmt='g')
+ax1.set_title('Matriz de Confusión') #título
+ax1.set_xlabel('Predicción') #eje x
+ax1.set_ylabel('Real') #eje y
+f.savefig('SVM-1.jpg')
+
+print(classification_report(y_test, y_pred))
+
+print("Accuracy: ",accuracy_score(y_test,y_pred))
+print("Recall: ",recall_score(y_test,y_pred))
+print("Precision: ",precision_score(y_test,y_pred))
+print("F1: ",f1_score(y_test,y_pred))
+print("R2: ",r2_score(y_test,y_pred))
+
+
+serrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+
+
+
+
+
+
+
+#GradientBoosting
+from sklearn.ensemble import GradientBoostingClassifier
+
+modelGB = GradientBoostingClassifier(random_state=100,
+          n_estimators=100,min_samples_split=100, max_depth=3)
+
+modelGB.fit(X_train_scaled, y_train)
+
+y_pred = modelGB.predict(X_test_scaled)
+
+gbk_score = modelGB.score(X_test_scaled,y_test)
+
+gbos_score=accuracy_score(y_test, y_pred)
+
+print("Gradient Boosting Score :",gbos_score)
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix,classification_report
+
+sns.set()
+
+cm = confusion_matrix(y_test, y_pred, labels=[0,1])
+f, (ax1) = plt.subplots(figsize=(3,3),nrows=1)
+
+# crear mapa de calor dibujar mapa de calor: cmap="Reds"
+sns.heatmap(pd.DataFrame(cm),linewidths = 0.05, annot=True, cmap="Blues",fmt='g')
+ax1.set_title('Matriz de Confusión') #título
+ax1.set_xlabel('Predicción') #eje x
+ax1.set_ylabel('Real') #eje y
+f.savefig('GB-1.jpg')
+
+
+print(classification_report(y_test, y_pred))
+
+print("Accuracy: ",accuracy_score(y_test,y_pred))
+print("Recall: ",recall_score(y_test,y_pred))
+print("Precision: ",precision_score(y_test,y_pred))
+print("F1: ",f1_score(y_test,y_pred))
+print("R2: ",r2_score(y_test,y_pred))
+
+
+
+# Crear el clasificador XGBoost
+import xgboost as xgb
+
+xgb_classifier = xgb.XGBClassifier(
+    learning_rate=0.001,  # Tasa de aprendizaje (learning rate)
+    n_estimators=100,  # Número de árboles (estimadores)
+    max_depth=3,  # Profundidad máxima de cada árbol
+    subsample=0.8,  # Submuestra aleatoria de datos de entrenamiento
+    colsample_bytree=0.8,  # Submuestra de columnas al construir cada árbol
+    reg_alpha=0.1,  # Regularización L1 (alpha)
+    reg_lambda=0.1  # Regularización L2 (lambda)
+)
+
+# Entrenar el modelo
+xgb_classifier.fit(X_train_scaled, y_train)
+
+# Predecir con el modelo entrenado
+y_pred = xgb_classifier.predict(X_test_scaled)
+
+gbos_score=accuracy_score(y_test, y_pred)
+
+print("Gradient Boosting Score :",gbos_score)
+
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix,classification_report
+
+sns.set()
+
+cm = confusion_matrix(y_test, y_pred, labels=[0,1])
+f, (ax1) = plt.subplots(figsize=(3,3),nrows=1)
+
+# crear mapa de calor dibujar mapa de calor: cmap="Reds"
+sns.heatmap(pd.DataFrame(cm),linewidths = 0.05, annot=True, cmap="Blues",fmt='g')
+ax1.set_title('Matriz de Confusión') #título
+ax1.set_xlabel('Predicción') #eje x
+ax1.set_ylabel('Real') #eje y
+f.savefig('XGB-1.jpg')
+print("Accuracy: ",accuracy_score(y_test,y_pred))
+print("Recall: ",recall_score(y_test,y_pred))
+print("Precision: ",precision_score(y_test,y_pred))
+print("F1: ",f1_score(y_test,y_pred))
+print("R2: ",r2_score(y_test,y_pred))
+
+#lightgbm
+
+import lightgbm as lgb
+
+# Crear un clasificador LightGBM
+lgb_classifier = lgb.LGBMClassifier(
+    learning_rate=0.01,  # Tasa de aprendizaje (learning rate)
+    n_estimators=100,  # Número de árboles (estimadores)
+    max_depth=-1,  # Profundidad máxima de cada árbol (-1 indica ilimitada)
+    subsample=0.8,  # Submuestra aleatoria de datos de entrenamiento
+    colsample_bytree=0.8,  # Submuestra de columnas al construir cada árbol
+    reg_alpha=0.1,  # Regularización L1 (alpha)
+    reg_lambda=0.1  # Regularización L2 (lambda)
+)
+
+# Entrenar el modelo
+lgb_classifier.fit(X_train_scaled, y_train)
+
+# Predecir con el modelo entrenado
+y_pred = lgb_classifier.predict(X_test_scaled)
+
+lgb_score=accuracy_score(y_test, y_pred)
+
+print("Light Gradient Boosting Score :",lgb_score)
+
+sobre el segundo nivel trabajar la gestion de recursos 
+
+
+&&&&&&&&&&&&&&&&&
+example: https://empresas.blogthinkbig.com/como-interpretar-la-matriz-de-confusion-ejemplo-practico/
+
+
+https://fairmodel.econ.yale.edu/rayfair/pdf/2011b.htm
+
+rate_marriage: How rate marriage(como califica su matrimonio)
+
+1 = very poor (muy pobre)
+
+2 = poor (pobre)
+
+3 = fair (justa)
+
+4 = good (buena)
+
+5 = very good (muy buena)
+
+age: la edad
+
+yrs_married: años de casada
+
+children: No Children
+
+religious: how religious (cuán religioso), 1:not (no), 2:midly(medianamente) , 3:faily(deficientemente) , 4:strongly(fuertemente)
+
+educ: nivel de educación,
+9 = grade school
+12= high school
+14= some college
+16= college graduate
+17=some graduate school
+20=advance degree
+
+ocupation: Ocupación
+1= student
+2= farming, agriculture, some-skilled, unskilled worker
+3= white-colloar
+4= teacher-counseler social worker, nursing, artirst, writers, technician, skiller worker
+5= managerial
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+matriz de responsabilidades, identificar en cada
